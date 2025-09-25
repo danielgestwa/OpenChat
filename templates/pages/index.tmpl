@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Chat</title>
+
+    <script src="/htmx.min.js"></script>
+    <link href="/main.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Navbar -->
+    {{template "navbar"}}
+
+    <!-- Scrollable messages -->
+    <div class="messages">
+        {{template "newMessage"}}
+        
+        <button hx-get="/chats" hx-target="#messageList">Refresh</button>
+        <div hx-get="/chats" hx-trigger="load, newChat from:body" id="messageList">
+            <span>Loading...</span>
+        </div>
+    </div>
+</body>
+</html>

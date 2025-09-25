@@ -1,0 +1,21 @@
+<div>
+    {{range $chat := .chats}}
+        <div class="message">
+            <div class="message-header">
+                <span>{{$chat.User}}</span>
+                <span>Vanishes in {{$chat.Vanish}} min</span>
+            </div>
+            <div class="message-content">
+                {{$chat.Message}}
+            </div>
+            <div class="message-footer">
+                <button class="votes" hx-post="/upvotes/chats/{{$chat.UUID}}" hx-swap="none">
+                    <span>⬆<span hx-get="/upvotes/chats/{{$chat.UUID}}" hx-trigger="newUpvote_{{$chat.UUID}} from:body" hx-swap="innerHTML">{{$chat.Upvotes}}</span></span>
+                </button>
+                <!-- <button hx-get="replies/chats/{{$chat.UUID}}" hx-target="#replies-{{$chat.UUID}}">Load replies</button> -->
+            </div>
+
+            <div id="replies-{{$chat.UUID}}"></div>
+        </div>
+    {{end}}
+</div>

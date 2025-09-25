@@ -1,0 +1,18 @@
+<div class="replies">
+    {{range $reply := .replies}}
+        <div class="message">
+            <div class="message-header">
+                <span>{{$reply.User}}</span>
+            </div>
+            <div class="message-content">
+                {{$reply.msg}}
+            </div>
+            <div class="message-footer">
+                <div class="votes">
+                    <span>⬆ {{$reply.Upvotes}}</span>
+                </div>
+            </div>
+        </div>
+    {{end}}
+    {{template "newReply" .chat}}
+</div>
