@@ -18,7 +18,7 @@ var vanishTimeMin string = "60"
 
 func QueryChats() ([]Chat, error) {
 	db := connect()
-	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, (" + vanishTimeMin + " - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt ORDER BY created_at DESC")
+	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, (" + vanishTimeMin + " - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt ORDER BY id DESC")
 	chats, newErr := fillChats(results, err)
 	exit(db)
 	return chats, newErr
@@ -26,7 +26,7 @@ func QueryChats() ([]Chat, error) {
 
 func QueryReplies(parentId string) ([]Chat, error) {
 	db := connect()
-	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, ("+vanishTimeMin+" - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt AND parent_uuid = ? ORDER BY created_at DESC", parentId)
+	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, ("+vanishTimeMin+" - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt AND parent_uuid = ? ORDER BY id DESC", parentId)
 	chats, newErr := fillChats(results, err)
 	exit(db)
 	return chats, newErr
@@ -46,7 +46,7 @@ func QueryChat(id string) (Chat, error) {
 
 func AddChat(chat Chat) {
 	db := connect()
-	insert, err := db.Query("INSERT INTO chats VALUES (UUID(), NULL, ?, ?, 0, NOW())", chat.User, chat.Message)
+	insert, err := db.Query("INSERT INTO chats VALUES (NULL, UUID(), NULL, ?, ?, 0, NOW())", chat.User, chat.Message)
 
 	if err != nil {
 		panic(err.Error())
@@ -58,7 +58,7 @@ func AddChat(chat Chat) {
 
 func AddReply(chat Chat) {
 	db := connect()
-	insert, err := db.Query("INSERT INTO chats VALUES (UUID(), ?, ?, ?, 0, NOW())", chat.UUID, chat.User, chat.Message)
+	insert, err := db.Query("INSERT INTO chats VALUES (NULL, UUID(), ?, ?, ?, 0, NOW())", chat.UUID, chat.User, chat.Message)
 
 	if err != nil {
 		panic(err.Error())

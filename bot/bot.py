@@ -9,7 +9,8 @@ def main():
         'https://news.un.org/feed/subscribe/en/news/region/global/feed/rss.xml',
         'http://rss.cnn.com/rss/cnn_topstories.rss',
         'https://feeds.bbci.co.uk/news/rss.xml',
-        'http://rss.cnn.com/rss/edition.rss'
+        'https://www.cbsnews.com/latest/rss/main',
+        'https://feeds.skynews.com/feeds/rss/world.xml'
     ]
 
     newsList = []
