@@ -14,9 +14,11 @@ type Chat struct {
 	Vanish     string `json:"vanish"`
 }
 
+var vanishTimeMin string = "60"
+
 func QueryChats() ([]Chat, error) {
 	db := connect()
-	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, (60 - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt ORDER BY created_at DESC")
+	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, (" + vanishTimeMin + " - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt ORDER BY created_at DESC")
 	chats, newErr := fillChats(results, err)
 	exit(db)
 	return chats, newErr
@@ -24,7 +26,7 @@ func QueryChats() ([]Chat, error) {
 
 func QueryReplies(parentId string) ([]Chat, error) {
 	db := connect()
-	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, (60 - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt AND parent_uuid = ? ORDER BY created_at DESC", parentId)
+	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, ("+vanishTimeMin+" - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt AND parent_uuid = ? ORDER BY created_at DESC", parentId)
 	chats, newErr := fillChats(results, err)
 	exit(db)
 	return chats, newErr

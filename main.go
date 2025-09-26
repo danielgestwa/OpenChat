@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"openchat/storage"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -127,13 +128,20 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+	fmt.Println("PLEASE REMEMBER TO RUN /storage/migrations.sql BEFORE FRESH SETUP")
+
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}
 
-	r := setupRouter()
-	r.Run(":80")
+	if os.Getenv("APP_ENV") == "prod" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
-	fmt.Println("PLEASE REMEMBER TO RUN /storage/migrations.sql BEFORE FRESH SETUP")
+	r := setupRouter()
+	if os.Getenv("APP_URL") != "127.0.0.1" {
+		r.SetTrustedProxies([]string{os.Getenv("APP_URL")})
+	}
+	r.Run(":80")
 }
