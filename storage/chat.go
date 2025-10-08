@@ -6,19 +6,36 @@ import (
 )
 
 type Chat struct {
-	UUID       string `json:"uuid"`
-	ParentUUID string `json:"parent_uuid"`
-	User       string `json:"user"`
-	Message    string `json:"msg" form:"msg" binding:"required"`
-	Upvotes    string `json:"upvotes"`
-	Vanish     string `json:"vanish"`
+	UUID         string `json:"uuid"`
+	ParentUUID   string `json:"parent_uuid"`
+	User         string `json:"user"`
+	Message      string `json:"msg" form:"msg" binding:"required"`
+	Upvotes      string `json:"upvotes"`
+	Vanish       string `json:"vanish"`
+	RepliesCount string `json:"replies_cnt"`
 }
 
 var vanishTimeMin string = "60"
 
 func QueryChats() ([]Chat, error) {
 	db := connect()
-	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, (" + vanishTimeMin + " - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt ORDER BY id DESC")
+	query := `
+		SELECT
+			c.uuid,
+			c.msg,
+			u.name AS user,
+			c.upvotes,
+			(60 - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) AS vanish,
+			(SELECT COUNT(*) FROM chats cs WHERE cs.parent_uuid = c.uuid) AS replies_cnt
+		FROM
+			chats AS c 
+		JOIN
+			users AS u
+			ON c.user_fprt = u.fprt
+		WHERE c.parent_uuid IS NULL
+		ORDER BY c.id DESC;
+	`
+	results, err := db.Query(query) //db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, (" + vanishTimeMin + " - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt AND parent_uuid IS NULL ORDER BY id DESC")
 	chats, newErr := fillChats(results, err)
 	exit(db)
 	return chats, newErr
@@ -26,10 +43,10 @@ func QueryChats() ([]Chat, error) {
 
 func QueryReplies(parentId string) ([]Chat, error) {
 	db := connect()
-	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, ("+vanishTimeMin+" - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish FROM chats as c, users as u WHERE c.user_fprt = u.fprt AND parent_uuid = ? ORDER BY id DESC", parentId)
-	chats, newErr := fillChats(results, err)
+	results, err := db.Query("SELECT c.uuid, c.msg, u.name as user, c.upvotes, ("+vanishTimeMin+" - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) as vanish, '0' as replies_cnt FROM chats as c, users as u WHERE c.user_fprt = u.fprt AND parent_uuid = ? ORDER BY id", parentId)
+	replies, newErr := fillChats(results, err)
 	exit(db)
-	return chats, newErr
+	return replies, newErr
 }
 
 func QueryChat(id string) (Chat, error) {
@@ -58,7 +75,7 @@ func AddChat(chat Chat) {
 
 func AddReply(chat Chat) {
 	db := connect()
-	insert, err := db.Query("INSERT INTO chats VALUES (NULL, UUID(), ?, ?, ?, 0, NOW())", chat.UUID, chat.User, chat.Message)
+	insert, err := db.Query("INSERT INTO chats VALUES (NULL, UUID(), ?, ?, ?, 0, NOW())", chat.ParentUUID, chat.User, chat.Message)
 
 	if err != nil {
 		panic(err.Error())
@@ -76,7 +93,7 @@ func fillChats(results *sql.Rows, err error) ([]Chat, error) {
 	for results.Next() {
 		var chat Chat
 		// for each row, scan the result into our tag composite object
-		err = results.Scan(&chat.UUID, &chat.Message, &chat.User, &chat.Upvotes, &chat.Vanish)
+		err = results.Scan(&chat.UUID, &chat.Message, &chat.User, &chat.Upvotes, &chat.Vanish, &chat.RepliesCount)
 		if err != nil {
 			return nil, errors.New("ERROR DURING ROWS GATHERING")
 		}

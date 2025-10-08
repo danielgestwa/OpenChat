@@ -27,7 +27,7 @@ def main():
                     continue
 
             newsList.append({
-                "message": news.title + ": " + news.link + " (" + news.published + ")",
+                "message": news.title + "\n\n" + news.link + "\n\n" + news.published,
                 "timestamp": dt.timestamp()
             })
 

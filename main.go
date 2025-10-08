@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"net"
 	"net/http"
 	"openchat/storage"
 	"os"
@@ -12,13 +13,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func getUserFprt(r http.Request) string {
-	userStr := r.Host + r.RemoteAddr
+func getUserFprt(r *http.Request) string {
+	host, _, _ := net.SplitHostPort(r.RemoteAddr)
+	userAgent := r.UserAgent()
+	userStr := host + "|" + userAgent
+
 	hash := sha256.Sum256([]byte(userStr))
-	userId := base64.StdEncoding.EncodeToString(hash[:])
-	//Add User if not exists
-	storage.UserExists(userId)
-	return userId
+	userID := base64.RawURLEncoding.EncodeToString(hash[:])
+
+	storage.UserExists(userID)
+	return userID
 }
 
 func getChats() ([]storage.Chat, error) {
@@ -59,7 +63,7 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		chat.User = getUserFprt(*c.Request)
+		chat.User = getUserFprt(c.Request)
 		storage.AddChat(chat)
 		c.Header("HX-Trigger", "newChat")
 		c.JSON(http.StatusCreated, gin.H{"message": "Success"})
@@ -84,15 +88,15 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		chat, err := storage.QueryChat(c.Params.ByName("uuid"))
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
-			return
-		}
+		// chat, err := storage.QueryChat(c.Params.ByName("uuid"))
+		// if err != nil {
+		// 	c.JSON(http.StatusUnprocessableEntity, gin.H{"message": err.Error()})
+		// 	return
+		// }
 
 		c.HTML(http.StatusOK, "replies.tmpl", gin.H{
 			"replies": results,
-			"chat":    chat,
+			// "chat":    chat,
 		})
 	})
 
@@ -102,10 +106,10 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		chat.UUID = c.Params.ByName("uuid")
-		chat.User = getUserFprt(*c.Request)
+		chat.ParentUUID = c.Params.ByName("uuid")
+		chat.User = getUserFprt(c.Request)
 		storage.AddReply(chat)
-		c.Header("HX-Trigger", "newReplie_"+c.Params.ByName("uuid"))
+		c.Header("HX-Trigger", "newReply-"+chat.ParentUUID)
 		c.JSON(http.StatusCreated, gin.H{"message": "Success"})
 	})
 
@@ -119,7 +123,7 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.POST("/upvotes/chats/:uuid", func(c *gin.Context) {
-		storage.AddUpvote(c.Params.ByName("uuid"), getUserFprt(*c.Request))
+		storage.AddUpvote(c.Params.ByName("uuid"), getUserFprt(c.Request))
 		c.Header("HX-Trigger", "newUpvote_"+c.Params.ByName("uuid"))
 		c.JSON(http.StatusCreated, gin.H{"message": "Success"})
 	})

@@ -15,7 +15,7 @@ CREATE TABLE chats(
     uuid VARCHAR(36) NOT NULL,
     parent_uuid VARCHAR(36) DEFAULT NULL,
     user_fprt VARCHAR(64) NOT NULL,
-    msg VARCHAR(5000) NOT NULL,
+    msg VARCHAR(12000) NOT NULL,
     upvotes BIGINT NOT NULL DEFAULT 0,
     created_at DATETIME,
     PRIMARY KEY(uuid),

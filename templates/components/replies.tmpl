@@ -5,14 +5,16 @@
                 <span>{{$reply.User}}</span>
             </div>
             <div class="message-content">
-                {{$reply.msg}}
+                {{$reply.Message}}
             </div>
             <div class="message-footer">
                 <div class="votes">
-                    <span>⬆ {{$reply.Upvotes}}</span>
+                    <!-- <span>⬆ {{$reply.Upvotes}}</span> -->
+                    <button class="votes" hx-post="/upvotes/chats/{{$reply.UUID}}" hx-swap="none">
+                        <span>⬆<span hx-get="/upvotes/chats/{{$reply.UUID}}" hx-trigger="newUpvote_{{$reply.UUID}} from:body" hx-swap="innerHTML">{{$reply.Upvotes}}</span></span>
+                    </button>
                 </div>
             </div>
         </div>
     {{end}}
-    {{template "newReply" .chat}}
 </div>

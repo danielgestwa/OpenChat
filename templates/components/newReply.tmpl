@@ -1,6 +1,6 @@
 {{define "newReply"}}
     <div>
-        <form class="reply-box" hx-post="reply/chats/{{.chat.UUID}}" hx-swap="none" hx-on::after-request="if(event.detail.successful) this.reset()">
+        <form class="reply-box" hx-post="/replies/chats/{{.UUID}}" hx-swap="none" hx-on::after-request="if(event.detail.successful) this.reset()">
             <textarea id="msg" name="msg" minlength="3" maxlength="250" placeholder="Write your reply..."></textarea>
             <button class="reply-box" type="submit">Send Reply</button>
         </form>

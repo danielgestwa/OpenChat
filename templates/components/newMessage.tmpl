@@ -1,7 +1,7 @@
 {{define "newMessage"}}
     <div>
         <form class="new-message" hx-post="/chats" hx-swap="none" hx-on::after-request="if(event.detail.successful) this.reset()">
-            <textarea id="msg" name="msg" minlength="3" maxlength="250" rows="5" placeholder="Write your message..."></textarea>
+            <textarea id="msg" name="msg" minlength="3" maxlength="12000" rows="5" placeholder="Write your message..."></textarea>
             <button type="submit">Send Message</button>
         </form>
     </div>
