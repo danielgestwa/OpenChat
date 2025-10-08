@@ -1,4 +1,3 @@
-````markdown
 # OpenChat  
 ## Open and Free Chat Platform  
 
