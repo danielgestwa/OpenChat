@@ -25,7 +25,7 @@ func QueryChats() ([]Chat, error) {
 			c.msg,
 			u.name AS user,
 			c.upvotes,
-			(60 - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) AS vanish,
+			(` + vanishTimeMin + ` - TIMESTAMPDIFF(MINUTE, c.created_at, NOW())) AS vanish,
 			(SELECT COUNT(*) FROM chats cs WHERE cs.parent_uuid = c.uuid) AS replies_cnt
 		FROM
 			chats AS c 
