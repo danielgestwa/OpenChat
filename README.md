@@ -25,7 +25,7 @@ Key features include:
 1. **Run the application using Docker Compose:**  
    ```bash
    docker compose up -d
-````
+   ```
 
 2. **Open your browser** and visit:
    [http://localhost:8000](http://localhost:8000)
